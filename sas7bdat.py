@@ -447,8 +447,8 @@ class SAS7BDAT(object):
             else:
                 colcount = self.readVal('i', colsize.raw, 4, 4)
             if colcountp1 + colcountp2 != colcount:
-                self.logger.warning('[%s] column count mismatch',
-                                    os.path.basename(self.path))
+                self.logger.warning('[%s] column count mismatch: %d + %d != %d',
+                    os.path.basename(self.path), colcountp1, colcountp2, colcount)
             if len(coltext) < 1:
                 self.logger.error('[%s] no column text subheaders found',
                                   os.path.basename(self.path))
