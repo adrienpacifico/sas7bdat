@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+
+
 import sys
-from distutils.core import setup
+
+from setuptools import setup
 
 
 if sys.version_info < (2, 6):
