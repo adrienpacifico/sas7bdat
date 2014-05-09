@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 A sas7bdat reader. File format taken from
 https://github.com/BioStatMatt/sas7bdat/blob/master/inst/doc/sas7bdat.rst
@@ -727,7 +726,3 @@ class SAS7BDAT(object):
         finally:
             if outF is not None:
                 outF.close()
-
-
-if __name__ == '__main__':
-    pass  # TODO: write some unit tests
