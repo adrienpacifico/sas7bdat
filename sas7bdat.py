@@ -4,7 +4,6 @@ https://github.com/BioStatMatt/sas7bdat/blob/master/inst/doc/sas7bdat.rst
 """
 import os
 import sys
-import csv
 import struct
 import locale
 import logging
@@ -695,34 +694,3 @@ class SAS7BDAT(object):
                     base += self.header.rowlength
                     if row:
                         yield row
-
-    def convertFile(self, outFile, delimiter=',', stepSize=100000):
-        self.logger.debug("Input: %s\nOutput: %s", self.path, outFile)
-        outF = None
-        try:
-            if outFile == '-':
-                outF = sys.stdout
-            else:
-                outF = open(outFile, 'w')
-            out = csv.writer(outF,
-                             lineterminator='\n',
-                             delimiter=delimiter)
-            i = 0
-            for i, line in enumerate(self.readData(), 1):
-                if not line:
-                    i -= 1
-                    continue
-                if not i % stepSize:
-                    self.logger.info('%.1f%% complete',
-                                     float(i) / self.header.rowcount * 100.0)
-                try:
-                    out.writerow(line)
-                except IOError:
-                    self.logger.warn('Wrote %d lines before interruption', i)
-                    break
-            self.logger.info('[%s] wrote %d of %d lines',
-                             os.path.basename(outFile), i - 1,
-                             self.header.rowcount)
-        finally:
-            if outF is not None:
-                outF.close()

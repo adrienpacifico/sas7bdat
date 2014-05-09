@@ -1,10 +1,41 @@
 #!/usr/bin/env python
-import os
-import sys
+
+
+import csv
 import logging
 import optparse
+import os
+import sys
 
 from sas7bdat import SAS7BDAT
+
+
+def convert_file(parser, output_path, delimiter=',', stepSize=100000):
+    parser.logger.debug("Input: %s\nOutput: %s", parser.path, output_path)
+    output_file = None
+    try:
+        if output_path == '-':
+            output_file = sys.stdout
+        else:
+            output_file = open(output_path, 'w')
+        out = csv.writer(output_file, lineterminator='\n', delimiter=delimiter)
+        output_index = 0
+        for input_index, row in enumerate(parser.readData(), 1):
+            if not row:
+                continue
+            if not input_index % stepSize:
+                parser.logger.info('%.1f%% complete', float(input_index) / parser.header.rowcount * 100.0)
+            try:
+                out.writerow(row)
+            except IOError:
+                parser.logger.warn('Wrote %d lines before interruption', output_index)
+                break
+            output_index += 1
+        parser.logger.info('[%s] wrote %d of %d lines', os.path.basename(output_path), input_index - 1,
+            parser.header.rowcount)
+    finally:
+        if output_file is not None:
+            output_file.close()
 
 
 def main(options, args):
@@ -12,25 +43,25 @@ def main(options, args):
         logLevel = logging.DEBUG
     else:
         logLevel = logging.INFO
-    inFiles = [args[0]]
+    input_paths = [args[0]]
     if len(args) == 1:
-        outFiles = ['%s.csv' % os.path.splitext(args[0])[0]]
+        output_paths = ['%s.csv' % os.path.splitext(args[0])[0]]
     elif len(args) == 2 and (args[1] == '-' or
                              args[1].lower().endswith('.csv')):
-        outFiles = [args[1]]
+        output_paths = [args[1]]
     else:
         assert all(x.lower().endswith('.sas7bdat') for x in args)
-        inFiles = args
-        outFiles = ['%s.csv' % os.path.splitext(x)[0] for x in inFiles]
-    assert len(inFiles) == len(outFiles)
-    for i in xrange(len(inFiles)):
-        f = SAS7BDAT(inFiles[i], logLevel=logLevel)
+        input_paths = args
+        output_paths = ['%s.csv' % os.path.splitext(x)[0] for x in input_paths]
+    assert len(input_paths) == len(output_paths)
+    for input_path , output_path in zip(input_paths, output_paths):
+        parser = SAS7BDAT(input_path, logLevel=logLevel)
         if options.header:
-            f.logger.info(str(f.header))
+            parser.logger.info(str(parser.header))
             continue
-        f.convertFile(outFiles[i],
-                      delimiter=options.delimiter,
-                      stepSize=options.progress_step)
+        convert_file(parser, output_path,
+                     delimiter=options.delimiter,
+                     stepSize=options.progress_step)
 
 
 if __name__ == '__main__':
