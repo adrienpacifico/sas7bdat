@@ -12,6 +12,8 @@ from cStringIO import StringIO
 from datetime import datetime, timedelta
 from collections import namedtuple
 
+from pandas import DataFrame
+
 __all__ = ['SAS7BDAT']
 
 
@@ -694,3 +696,21 @@ class SAS7BDAT(object):
                     base += self.header.rowlength
                     if row:
                         yield row
+
+
+
+
+def read_sas(filepath_or_buffer):
+    assert filepath_or_buffer.lower().endswith('.sas7bdat')
+    parser = SAS7BDAT(filepath_or_buffer)
+    rows_iter = parser.readData()
+    columns = rows_iter.next()
+    data_frame = DataFrame(
+        (
+            row
+            for row in rows_iter
+            if row
+            ),
+        columns = columns,
+        )
+    return data_frame

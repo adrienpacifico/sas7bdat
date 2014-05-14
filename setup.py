@@ -19,5 +19,5 @@ setup(name='sas7bdat',
       url='http://git.pyhacker.com/sas7bdat',
       description='A sas7bdat file reader for Python',
       py_modules=['sas7bdat'],
-      scripts=['scripts/sas7bdat_to_csv'])
+      scripts=['scripts/sas7bdat_to_csv.py'])
 
